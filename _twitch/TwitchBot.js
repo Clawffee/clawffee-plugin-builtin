@@ -15,7 +15,8 @@ const { deepCleanTwitchData } = require('./cleanTwurple');
 
 /**
  * 
- * @param {ApiClient} object 
+ * @param {ApiClient} object
+ * @returns {TwitchApi}
  */
 function cleanAPIOutput(object) {
     return new Proxy(object, {

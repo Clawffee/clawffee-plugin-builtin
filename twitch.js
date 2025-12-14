@@ -36,7 +36,7 @@ const channels = conf.chats;
 /**
  * @typedef AddedBot
  * @prop {string} name - The user login of the bot.
- * @prop {(message: string, channel: string) => Promise<void>} say - Function to send a message to a channel.
+ * @prop {(message: string, channel?: string) => Promise<void>} say - Function to send a message to a channel.
  * @prop {(message: string, replyTo: import('@twurple/chat').ChatMessage) => Promise<void>} reply - Function to reply to a message in a channel.
  */
 
@@ -81,14 +81,14 @@ const connectedUser = {
      * @param {string} text - The message to send.
      * @returns {Promise<void>}
      */
-    say: async (message, channel) => { },
+    say: createDoNothing(),
     /**
      * Replies to a chat message in a channel.
      * @param {string} message - The message to send.
      * @param {import('@twurple/chat').ChatMessage} replyTo - The message to reply to.
      * @returns {Promise<void>}
      */
-    reply: async (message, replyTo) => { },
+    reply: createDoNothing(),
 };
 
 
@@ -142,6 +142,37 @@ async function addBot(tokenData, main = false) {
     return { id: userInfo.id, name: ownName, pfp: userInfo.profile_image_url, expiryDate: TokenInfo.expiryDate.getTime() };
 }
 
+/**
+ * 
+ * @param {ConnectedBot} bot 
+ * @param {string} mainChannelID 
+ * @returns {(message: string, channel?: string) => Promise<void>}
+ */
+function createSayFunction(bot, mainChannelID) {
+    return function say(message, channel = mainChannelID) {
+        return bot.requests.chat.sendChatMessage(channel, message);
+    }
+}
+
+/**
+ * @typedef {{messageId: string, broadcasterID: string}} Replyable
+ */
+/**
+ * 
+ * @param {ConnectedBot} bot 
+ * @param {string} mainChannelID 
+ * @returns {(message: string, replyTo: Replyable) => Promise<void>}
+ */
+function createReplyFunction(bot) {
+    return function reply(message, replyTo) {
+        if(!replyTo || !replyTo.messageId || !replyTo.broadcasterID) {
+            return Promise.reject("replyTo parameter is invalid: " + JSON.stringify(replyTo));
+        }
+        return bot.requests.chat.sendChatMessage(replyTo.broadcasterID, message, {
+            replyParentMessageId: replyTo.messageId
+        });
+    }
+}
 
 /**
  * Connects all bots by loading and decrypting their OAuth tokens.
@@ -174,12 +205,14 @@ async function connect() {
                             connectedUser.id = user.id;
                             bindDoNothing(connectedUser.requests, connectedBots[name].requests);
                             bindDoNothing(connectedUser.events, connectedBots[name].events);
+                            bindDoNothing(connectedUser.say, createSayFunction(connectedBots[name], user.id));
+                            bindDoNothing(connectedUser.reply, createReplyFunction(connectedBots[name]));
                             connectedUser.say = connectedBots[name].say;
                             connectedUser.reply = connectedBots[name].reply;
                             try {
                                 (await connectedUser.api.channelPoints.getCustomRewards(user.id, false)).forEach((val) => {
                                     connectionInfo.redeems[val.id] = {id: val.id, title: val.title, img: val.getImageUrl(2), managed: false};
-                                });
+                                });resolve();
                                 (await connectedUser.api.channelPoints.getCustomRewards(user.id, true)).forEach((val) => {
                                     connectionInfo.redeems[val.id].managed = true;
                                 });
@@ -187,27 +220,34 @@ async function connect() {
                             connectionInfo.main = { ...user };
                         } else {
                             let user = (await addBot(tokenData.tokenData, true));
-                            let name = user.name;
                             connectionInfo.bots.push(
-                                { ...user, listenTo: channels[name].channels }
+                                { ...user }
                             );
                         }
                     } catch (e) {
-                        console.error(`Failed to load token for user ${userId}: \u001b[0m`, e);
+                        console.error(`Failed to load token for user ${userId.split('.')[0]}: \u001b[0m ${e.message}`);
                         let user = JSON.parse(decrypted).userInfo;
-                        let name = user.name;
-                        connectionInfo.failed.push({ ...user, listenTo: channels[name].channels });
+                        connectionInfo.failed.push({ ...user });
                     }
                 } else {
-                    console.error(`Failed to decrypt the token for user ${userId}`);
+                    console.error(`Failed to decrypt the token for user ${userId.split('.')[0]}`);
                 }
             }
         }
     }
+    console.info("TEMPORARILY: To add a twitch connection please use http://localhost:4444/twitch/add/main");
+    if(!connectionInfo.main.id) {
+        console.warn("No main Twitch account connected. Please add one.");
+        return;
+    }
     sharedServerData.internal.twitch = connectionInfo;
+    for (const botName in connectedBots) {
+        const bot = connectedBots[botName];
+        bot.say = createSayFunction(bot, connectionInfo.main.id);
+        bot.reply = createReplyFunction(bot);
+    }
     bindDoNothing(connectedBotsDoNothing, connectedBots);
     console.debug("Connected to Twitch API with Twurple.");
-    console.info("TEMPORARILY: To add a twitch connection please use http://localhost:4444/twitch/add/main");
 }
 connect()
 
