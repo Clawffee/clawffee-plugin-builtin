@@ -123,11 +123,11 @@ const cachedProxies = new WeakMap();
 
 
 /**
- * @template {string} T
- * @param {T} filePath 
- * @param {*} fallback 
+ * @template F
+ * @param {string} filePath 
+ * @param {F} fallback 
  * @param {*} options 
- * @returns {require(T)}
+ * @returns {F}
  */
 function autoSavedJSON(filePath, fallback, options) {
     if(openJSONFiles.has(filePath)) {
@@ -250,6 +250,7 @@ function autoSavedINI(filePath, fallback, options) {
     openINIFiles.set(filePath, new WeakRef(proxied));
     return proxied;
 }
+
 
 module.exports = {
     autoSavedJSON,

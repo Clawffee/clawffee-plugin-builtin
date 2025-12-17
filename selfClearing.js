@@ -16,7 +16,47 @@ const backup = autoSavedJSON('./config/internal/backup.json', {
     cooldownPUser: {}
 });
 
-//TODO: keep track of interval in backup
+const data = {
+    clearing: [],
+    cooldown: [],
+    cooldownPUser: []
+}
+
+function cleanUp() {
+    function cleanUpClearing(obj) {
+        if(currentTimeSegment(obj.interval) === obj.lastDate) return;
+        Object.keys(obj.data).forEach(key => delete obj.data[key]);
+        obj.lastDate = currentTimeSegment(obj.interval);
+        return;
+    }
+
+    data.clearing.forEach(v => cleanUpClearing(v.deref()));
+    Object.values(backup.clearing).forEach(cleanUpClearing);
+
+    function cleanUpCooldown(obj) {
+        if(currentTime() === obj.lastDate + obj.cooldown) return;
+        Object.keys(obj.data).forEach(key => delete obj.data[key]);
+        obj.lastDate = currentTime();
+        return;
+    }
+
+    data.cooldown.forEach(v => cleanUpCooldown(v.deref()));
+    Object.values(backup.cooldown).forEach(cleanUpCooldown);
+
+    function cleanUpCooldownPUser(obj) {
+        Object.keys(obj.data).forEach((v) => {
+            if(currentTime() > obj.lastDate + obj.cooldown) {
+                delete obj.data[v];
+            }
+        })
+    }
+
+    data.cooldownPUser.forEach(v => cleanUpCooldownPUser(v.deref()));
+    Object.values(backup.cooldownPUser).forEach(cleanUpCooldownPUser);
+}
+
+cleanUp();
+setInterval(cleanUp, 60 * 60 * 1000);
 
 function createClearingObject(backupKey = null, interval = 24 * 60 * 60 * 1000) {
     // clean up interval object
@@ -30,33 +70,37 @@ function createClearingObject(backupKey = null, interval = 24 * 60 * 60 * 1000) 
         interval = 24 * 60 * 60 * 1000;
     }
 
-    if(backupKey && !backup.clearing[backupKey]) {
-        backup.clearing[backupKey] = {
+    let obj;
+    if(backupKey) {
+        if(!backup.clearing[backupKey]) {
+            backup.clearing[backupKey] = {
+                lastDate: currentTimeSegment(interval),
+                data: {}
+            }
+        }
+        obj = backup.clearing[backupKey];
+    } {
+        obj = {
             lastDate: currentTimeSegment(interval),
             data: {}
-        }
+        };
+        data.clearing.push(new WeakRef(obj));
     }
+    obj.interval = interval;
 
-    // initial time segment we are in
-    let lastDate = backupKey ? backup.clearing[backupKey].lastDate : currentTimeSegment(interval);
-    const proxyObj = backupKey ? backup.clearing[backupKey].data : {};
-
-    return new Proxy(proxyObj, {
+    return new Proxy(obj.data, {
         get(target, prop) {
             // reset the object
-            if(currentTimeSegment(interval) !== lastDate) {
+            if(currentTimeSegment(interval) !== obj.lastDate) {
                 Object.keys(target).forEach(key => delete target[key]);
             }
             return Reflect.get(target, prop);
         },
         set(target, prop, value) {
             // initialize the object
-            if(currentTimeSegment(interval) !== lastDate) {
+            if(currentTimeSegment(interval) !== obj.lastDate) {
                 Object.keys(target).forEach(key => delete target[key]);
-                lastDate = currentTimeSegment(interval);
-                if(backupKey) {
-                    backup.clearing[backupKey].lastDate = lastDate;
-                }
+                obj.lastDate = currentTimeSegment(interval);
             }
             return Reflect.set(target, prop, value);
         }
@@ -75,33 +119,37 @@ function createCooldownObject(backupKey = null, cooldown = 24 * 60 * 60 * 1000) 
         cooldown = 24 * 60 * 60 * 1000;
     }
 
-    if(backupKey && !backup.cooldown[backupKey]) {
-        backup.cooldown[backupKey] = {
-            lastDate: currentTimeSegment(cooldown),
-            data: {}
+    let obj;
+    if(backupKey) {
+        if(!backup.cooldown[backupKey]) {
+            backup.cooldown[backupKey] = {
+                lastDate: currentTime(),
+                data: {}
+            }
         }
+        obj = backup.cooldown[backupKey];
+    } {
+        obj = {
+            lastDate: currentTime(),
+            data: {}
+        };
+        data.cooldown.push(new WeakRef(obj));
     }
+    obj.cooldown = cooldown;
 
-    // initial time segment we are in
-    let lastTime = backupKey ? backup.cooldown[backupKey].lastDate : currentTime();
-    const proxyObj = backupKey ? backup.cooldown[backupKey].data : {};
-
-    return new Proxy(proxyObj, {
+    return new Proxy(obj.data, {
         get(target, prop) {
             // reset the object
-            if(currentTime() > lastTime + cooldown) {
+            if(currentTime() > obj.lastDate + cooldown) {
                 Object.keys(target).forEach(key => delete target[key]);
             }
             return Reflect.get(target, prop);
         },
         set(target, prop, value) {
             // initialize the object
-            if(currentTime() > lastTime + cooldown) {
+            if(currentTime() > obj.lastDate + cooldown) {
                 Object.keys(target).forEach(key => delete target[key]);
-                lastTime = currentTime();
-                if(backupKey) {
-                    backup.cooldown[backupKey].lastDate = lastDate;
-                }
+                obj.lastDate = currentTime();
             }
             return Reflect.set(target, prop, value);
         }
@@ -120,12 +168,23 @@ function createCooldownObjectPerKey(backupKey = null, cooldown = 24 * 60 * 60 * 
         cooldown = 24 * 60 * 60 * 1000;
     }
 
-    if(backupKey && !backup.cooldownPUser[backupKey]) {
-        backup.cooldownPUser[backupKey] = {}
+    let obj;
+    if(backupKey) {
+        if(!backup.cooldownPUser[backupKey]) {
+            backup.cooldownPUser[backupKey] = {
+                data: {}
+            };
+        }
+        obj = backup.cooldown[backupKey];
+    } {
+        obj = {
+            data: {}
+        };
+        data.cooldownPUser.push(new WeakRef(obj));
     }
-    const proxyObj = backupKey ? backup.cooldownPUser[backupKey] : {};
+    obj.cooldown = cooldown;
 
-    return new Proxy(proxyObj, {
+    return new Proxy(obj.data, {
         get(target, prop) {
             const datapoint = Reflect.get(target, prop);
             // reset the object
@@ -138,7 +197,7 @@ function createCooldownObjectPerKey(backupKey = null, cooldown = 24 * 60 * 60 * 
         set(target, prop, value) {
             return Reflect.set(target, prop, {
                 lastTime: currentTime(),
-                data: value
+                data: value,
             });
         }
     });
