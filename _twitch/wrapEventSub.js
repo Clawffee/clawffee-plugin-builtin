@@ -55,19 +55,19 @@ const ID2UserCache = new Map();
  * @returns {EventListener}
  */
 function wrapEvent(evs, name, callback, args = []) {
-    if(!eventManagers.has(evs)) eventManagers.set(evs, {});
+    if (!eventManagers.has(evs)) eventManagers.set(evs, {});
     const eventManager = eventManagers.get(evs);
-    eventManager[name] = eventManager[name] ?? {listeners: new Map(), nextarg: new Map(), listener: null}
+    eventManager[name] = eventManager[name] ?? { listeners: new Map(), nextarg: new Map(), listener: null }
     let mgr = eventManager[name];
     const argsbak = [...args];
-    while(args.length > 0) {
+    while (args.length > 0) {
         const arg = args.shift();
-        if(!mgr.nextarg.has(arg)) mgr.nextarg.set(arg, {listeners: new Map(), nextarg: new Map(), listener: null});
+        if (!mgr.nextarg.has(arg)) mgr.nextarg.set(arg, { listeners: new Map(), nextarg: new Map(), listener: null });
         mgr = mgr.nextarg.get(arg);
     }
-    if(!mgr.listener) {
+    if (!mgr.listener) {
         console.debug(`subscribing to new event ${name}`)
-        mgr.listener = evs[name](...argsbak, (...data) => mgr.listeners.forEach(v => {try {v(...data.map(v => deepCleanTwitchData(v)))} catch (e) { console.error(e)}}));
+        mgr.listener = evs[name](...argsbak, (...data) => mgr.listeners.forEach(v => { try { v(...data.map(v => deepCleanTwitchData(v))) } catch (e) { console.error(e) } }));
     }
     const key = Bun.randomUUIDv7();
     // TODO: unsubscribe empty listeners
@@ -96,19 +96,19 @@ function wrapEvent(evs, name, callback, args = []) {
  */
 function wrapChat(evs, userName, name, callback) {
     const chat = chatListeners.get(evs);
-    if(!chat.currentChannels.includes(userName)) {
+    if (!chat.currentChannels.includes(userName)) {
         chat.join(userName);
     }
-    if(!eventManagers.has(chat)) eventManagers.set(chat, {});
+    if (!eventManagers.has(chat)) eventManagers.set(chat, {});
     const eventManager = eventManagers.get(chat);
-    eventManager[name] = eventManager[name] ?? {listeners: new Map(), nextarg: new Map(), listener: null}
+    eventManager[name] = eventManager[name] ?? { listeners: new Map(), nextarg: new Map(), listener: null }
     let mgr = eventManager[name];
-    if(!mgr.listener) {
+    if (!mgr.listener) {
         console.debug(`subscribing to new message ${name}`)
-        mgr.listener = chat[name]((channel, ...data) => eventManager[name].nextarg.get(channel)?.listeners.forEach(v => {try {v(channel, ...data.map(v => deepCleanTwitchData(v)))} catch (e) { console.error(e)}}));
+        mgr.listener = chat[name]((channel, ...data) => eventManager[name].nextarg.get(channel)?.listeners.forEach(v => { try { v(channel, ...data.map(v => deepCleanTwitchData(v))) } catch (e) { console.error(e) } }));
     }
 
-    if(!mgr.nextarg.has(userName)) mgr.nextarg.set(userName, {listeners: new Map(), nextarg: new Map(), listener: null});
+    if (!mgr.nextarg.has(userName)) mgr.nextarg.set(userName, { listeners: new Map(), nextarg: new Map(), listener: null });
     mgr = mgr.nextarg.get(userName);
 
     const key = Bun.randomUUIDv7();
@@ -147,7 +147,7 @@ function combineChat(callback, ...args) {
  * @returns 
  */
 function resolveName(channelID, api) {
-    if(ID2UserCache.has(channelID)) return Promise.resolve(ID2UserCache.get(channelID));
+    if (ID2UserCache.has(channelID)) return Promise.resolve(ID2UserCache.get(channelID));
     return api.users.getUserById(channelID).then((value) => value.name);
 }
 
@@ -177,15 +177,15 @@ function combineListeners(type, api, channelID, evsCbk, evsIDCbk, IRCCbk, IRCIDC
     let Cache = [];
     let Resolved = new Map();
     function flush(id) {
-        if(Resolved.get(id) === true) return;
+        if (Resolved.get(id) === true) return;
         clearTimeout(Resolved.get(id));
         Resolved.set(id, true);
         dataCbk(EVSCache.get(id), IRCCache.get(id));
     }
     function resolve(id) {
-        if(Resolved.get(id) === true) return;
+        if (Resolved.get(id) === true) return;
         Cache.push(id);
-        if(
+        if (
             type == 'EventSub' || type == 'IRC'
             || (EVSCache.has(id) && IRCCache.has(id))
         ) {
@@ -193,7 +193,7 @@ function combineListeners(type, api, channelID, evsCbk, evsIDCbk, IRCCbk, IRCIDC
         } else {
             Resolved.set(id, setTimeout(() => flush(id), type * 1000));
         }
-        if(Cache.length > 64) {
+        if (Cache.length > 64) {
             flush(id);
             const id = Cache.shift();
             IRCCache.delete(id);
@@ -209,23 +209,23 @@ function combineListeners(type, api, channelID, evsCbk, evsIDCbk, IRCCbk, IRCIDC
         IRCCache.set(id, data);
         resolve(id);
     }
-    if(type != 'EventSub') {
+    if (type != 'EventSub') {
         resolveName(channelID, api).then((name) => {
             IRCListener = IRCCbk(name, (...args) => {
                 let id = IRCIDCbk(...args);
-                if(!id) return dataCbk(args, null);
+                if (!id) return dataCbk(args, null);
                 addIRCData(id, args);
             });
         });
     }
-    if(type != 'IRC') {
+    if (type != 'IRC') {
         EVSListener = evsCbk(channelID, (...args) => {
             let id = evsIDCbk(...args);
-                if(!id) return dataCbk(null, args);
+            if (!id) return dataCbk(null, args);
             addEVSData(id, args);
         })
     }
-    if(type != 'EventSub' && type != 'IRC' && typeof type != "number") {
+    if (type != 'EventSub' && type != 'IRC' && typeof type != "number") {
         console.warn("type is not a number or 'IRC' or 'EventSub'");
         type = 5;
     }
@@ -246,7 +246,7 @@ function combineListeners(type, api, channelID, evsCbk, evsIDCbk, IRCCbk, IRCIDC
  * @param {number} uid
  */
 module.exports = function wrapEventSubListener(evs, api, uid) {
-    if(!chatListeners.has(evs)) {
+    if (!chatListeners.has(evs)) {
         chatListeners.set(evs, new ChatClient({
             authProvider: api._authProvider
         }));
@@ -257,7 +257,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
          * Fires when a user socket has established a connection with the EventSub server.
          * @param {TwurpleCallback<EventSubWsListener['onUserSocketConnect']>} callback 
          */
-        onUserSocketConnect(callback) {return wrapEvent(evs, 'onUserSocketConnect', callback)},
+        onUserSocketConnect(callback) { return wrapEvent(evs, 'onUserSocketConnect', callback) },
         /**
          * Fires when a user socket has disconnected from the EventSub server.
          * @param {TwurpleCallback<EventSubWsListener['onUserSocketDisconnect']>} callback 
@@ -404,10 +404,10 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                  * @returns 
                  */
                 (name, cbk) => combineChat(cbk,
-                    (c) => wrapChat(evs, name, 'onSub', (channel, user, subInfo, msg) => c(channel, user, {...subInfo, isGift: false}, msg)),
-                    (c) => wrapChat(evs, name, 'onSubGift', (channel, user, subInfo, msg) => c(channel, user, {...subInfo, isGift: true}, msg))
+                    (c) => wrapChat(evs, name, 'onSub', (channel, user, subInfo, msg) => c(channel, user, { ...subInfo, isGift: false }, msg)),
+                    (c) => wrapChat(evs, name, 'onSubGift', (channel, user, subInfo, msg) => c(channel, user, { ...subInfo, isGift: true }, msg))
                 ),
-                (channel, user, subInfo, msg) => (subInfo.isPrime?'1000':subInfo.plan) + " - " + subInfo.userId + " - " + subInfo.isGift,
+                (channel, user, subInfo, msg) => (subInfo.isPrime ? '1000' : subInfo.plan) + " - " + subInfo.userId + " - " + subInfo.isGift,
                 (EVSData, IRCargs) => callback({
                     EVSData: evsData,
                     IRCData: IRCargs?.[2],
@@ -424,7 +424,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                     getUser: () => evsData?.getUser() ?? api.users.getUserById(IRCargs?.[3].id),
                     streak: IRCargs?.[2].streak ?? IRCargs?.[2],
 
-                    
+
                 })
             )
             return wrapEvent(evs, 'onChannelSubscription', callback, [broadcasterID])
@@ -434,7 +434,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
          * @param {TwurpleCallback<EventSubWsListener['onChannelSubscriptionGift']>} callback
          * @param {string?} broadcasterID broadcaster to listen to (defaults to self)
          */
-        onChannelSubscriptionGift(callback, broadcasterID = uid,) { return wrapEvent(evs, 'onChannelSubscriptionGift', callback, [broadcasterID])},
+        onChannelSubscriptionGift(callback, broadcasterID = uid,) { return wrapEvent(evs, 'onChannelSubscriptionGift', callback, [broadcasterID]) },
         /**
          * @typedef onChannelSubscriptionType
          * @prop {Parameters<TwurpleCallback<EventSubWsListener['onChannelChatMessage']>>[0]?} EventSubData Original EventSub Data that this data is obtained from
@@ -463,7 +463,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
          * @param {IRCEventableType?} type type of listener to subscribe as, defaults to a combination of IRC and EventSub messages (number for timeout period)
          */
         onChannelSubscriptionMessage(callback, broadcasterID = uid, type = 5) {
-            return combineListeners(type, api, broadcasterID, 
+            return combineListeners(type, api, broadcasterID,
                 /**
                  * 
                  * @param {number} id 
@@ -479,7 +479,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                  * @returns 
                  */
                 (name, cbk) => wrapChat(evs, name, 'onResub', cbk),
-                (channel, user, subInfo) => (subInfo.isPrime?'1000':subInfo.plan) + " - " + subInfo.userId,
+                (channel, user, subInfo) => (subInfo.isPrime ? '1000' : subInfo.plan) + " - " + subInfo.userId,
                 (evsData, IRCargs) => callback({
                     EVSData: evsData,
                     IRCData: IRCargs?.[2],
@@ -599,7 +599,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
          * @param {string?} broadcasterID broadcaster to listen to (defaults to self)
          */
         onChannelRewardUpdate(callback, emoteID = null, broadcasterID = uid) {
-            if(emoteID) return wrapEvent(evs, 'onChannelRewardUpdateForReward', callback, [broadcasterID, emoteID]);
+            if (emoteID) return wrapEvent(evs, 'onChannelRewardUpdateForReward', callback, [broadcasterID, emoteID]);
             return wrapEvent(evs, 'onChannelRewardUpdate', callback, [broadcasterID]);
         },
         /**
@@ -616,7 +616,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
          * @param {string?} broadcasterID broadcaster to listen to (defaults to self)
          */
         onChannelRewardRemove(callback, emoteID = null, broadcasterID = uid) {
-            if(emoteID) return wrapEvent(evs, 'onChannelRewardRemoveForReward', callback, [broadcasterID, emoteID]);
+            if (emoteID) return wrapEvent(evs, 'onChannelRewardRemoveForReward', callback, [broadcasterID, emoteID]);
             return wrapEvent(evs, 'onChannelRewardRemove', callback, [broadcasterID]);
         },
         /**
@@ -633,7 +633,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
          * @param {string?} broadcasterID broadcaster to listen to (defaults to self)
          */
         onChannelRedemptionAdd(callback, emoteID = null, broadcasterID = uid) {
-            if(emoteID) return wrapEvent(evs, 'onChannelRedemptionAddForReward', callback, [broadcasterID, emoteID]);
+            if (emoteID) return wrapEvent(evs, 'onChannelRedemptionAddForReward', callback, [broadcasterID, emoteID]);
             return wrapEvent(evs, 'onChannelRedemptionAdd', callback, [broadcasterID]);
         },
         /**
@@ -650,7 +650,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
          * @param {string?} broadcasterID broadcaster to listen to (defaults to self)
          */
         onChannelRedemptionUpdate(callback, emoteID = null, broadcasterID = uid) {
-            if(emoteID) return wrapEvent(evs, 'onChannelRedemptionUpdateForReward', callback, [broadcasterID, emoteID]);
+            if (emoteID) return wrapEvent(evs, 'onChannelRedemptionUpdateForReward', callback, [broadcasterID, emoteID]);
             return wrapEvent(evs, 'onChannelRedemptionUpdate', callback, [broadcasterID]);
         },
         /**
@@ -784,7 +784,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
          * @param {TwurpleCallback<EventSubWsListener['onChannelChatMessageDelete']>} callback 
          * @param {string?} broadcasterID broadcaster to listen to (defaults to self)
          */
-        onChannelChatMessageDelete(callback, broadcasterID = uid) {return wrapEvent(evs, 'onChannelChatMessageDelete', callback, [broadcasterID, uid]);},
+        onChannelChatMessageDelete(callback, broadcasterID = uid) { return wrapEvent(evs, 'onChannelChatMessageDelete', callback, [broadcasterID, uid]); },
         /**
          * Subscribes to events that represent a chat notification being sent to a channel.
          * @param {TwurpleCallback<EventSubWsListener['onChannelChatNotification']>} callback 
@@ -792,7 +792,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
          * @param {'EventSub' | number?} type type of combination to use for the notification event (IRC is invalid)
          */
         onChannelChatNotification(callback, broadcasterID = uid, type = 5) {
-            if(type == 'IRC') {
+            if (type == 'IRC') {
                 return console.error('onChannelChatNotification does not support the IRC event type');
             }
             /**
@@ -810,7 +810,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
              * @param {Parameters<TwurpleCallback<EventSubWsListener['onChannelChatNotification']>>[0]} data
              */
             function getEVSID(data) {
-                switch(data.type) {
+                switch (data.type) {
                     case "announcement": return null;
                     case 'bits_badge_tier': return null;
                     case 'charity_donation': return null;
@@ -819,9 +819,9 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                     case 'pay_it_forward': return null;
                     case 'prime_paid_upgrade': return null;
                     case 'raid': return null;
-                    case 'resub': return data.tier + " - " + data.chatterId + " - " + data.cumulativeMonths;
-                    case 'sub': return data.tier + " - " + data.chatterId;
-                    case 'sub_gift': return data.tier + " - " + data.recipientId;
+                    case 'resub':
+                    case 'sub':
+                    case 'sub_gift': return data.messageId;
                     case 'unraid': return null;
                 }
             }
@@ -830,10 +830,10 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
              * @param {tmp} data 
              */
             function getChatID(data) {
-                switch(data.type) {
-                    case 'onResub': return "resub - " + (data.args[2].isPrime?'1000':data.args[2].plan) + " - " + data.args[2].userId + " - " + data.args[2].months;
-                    case 'onSub': return "sub - " + (data.args[2].isPrime?'1000':data.args[2].plan) + " - " + data.args[2].userId;
-                    case 'onSubGift': return "sub_gift - " + (data.args[2].isPrime?'1000':data.args[2].plan) + " - " + data.args[2].userId;
+                switch (data.type) {
+                    case 'onResub': return "resub - " + data.args[3].id;
+                    case 'onSub': return "sub - " + data.args[3].id;
+                    case 'onSubGift': return "sub_gift - " + data.args[3].id;
                 }
             }
             return combineListeners(type, api, broadcasterID,
@@ -844,7 +844,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                 (id, cbk) => wrapEvent(evs, 'onChannelChatNotification', cbk, [id, uid]),
                 (data) => {
                     const d = getEVSID(data);
-                    if(!d) return null;
+                    if (!d) return null;
                     return data.type + " - " + d;
                 },
                 /**
@@ -854,32 +854,36 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                  * @returns 
                  */
                 (name, cbk) => combineChat(cbk,
-                    (c) => wrapChat(evs, name, 'onResub', (...args) => c({type: 'onResub', args})),
-                    (c) => wrapChat(evs, name, 'onSub', (...args) => c({type: 'onSub', args})),
-                    (c) => wrapChat(evs, name, 'onSub', (...args) => c({type: 'onSub', args})),
-                    (c) => wrapChat(evs, name, 'onSubGift', (...args) => c({type: 'onSubGift', args}))
+                    (c) => wrapChat(evs, name, 'onResub', (...args) => c({ type: 'onResub', args })),
+                    (c) => wrapChat(evs, name, 'onSub', (...args) => c({ type: 'onSub', args })),
+                    (c) => wrapChat(evs, name, 'onSub', (...args) => c({ type: 'onSub', args })),
+                    (c) => wrapChat(evs, name, 'onSubGift', (...args) => c({ type: 'onSubGift', args }))
                 ),
                 (data) => {
                     return getChatID(data);
                 },
                 (evsdata, ircData) => {
-                switch(evsdata.type) {
-                    case "announcement": return callback(evsdata);
-                    case 'bits_badge_tier':
-                    case 'charity_donation':
-                    case 'community_sub_gift':
-                    case 'gift_paid_upgrade':
-                    case 'pay_it_forward':
-                    case 'prime_paid_upgrade':
-                    case 'unraid':
-                    case 'raid': return callback(data);
-                    case 'resub': 
-                    case 'sub':
-                    case 'sub_gift':
-                        evsdata.ircData = ircData[0].args[2];
-                        evsdata.ircUser = ircData[0].args[3];
-                        return callback(data);
-                }
+                    switch (evsdata.type) {
+                        case "announcement":
+                        case 'bits_badge_tier':
+                        case 'charity_donation':
+                        case 'community_sub_gift':
+                        case 'gift_paid_upgrade':
+                        case 'pay_it_forward':
+                        case 'prime_paid_upgrade':
+                        case 'unraid':
+                        case 'raid': return callback(evsdata);
+                        case 'resub':
+                        case 'sub':
+                        case 'sub_gift':
+                            if(ircData) {
+                                evsdata.ircData = ircData[0].args[2];
+                                evsdata.ircUser = ircData[0].args[3];
+                                evsdata.tier = evsdata.ircData[0].args[2].plan;
+                                evsdata.originalGiftInfo = ircData[0].args[2].originalGiftInfo;
+                            }
+                            return callback(evsdata);
+                    }
                 }
             )
             return wrapEvent(evs, 'onChannelChatNotification', callback, [broadcasterID, uid])
@@ -944,10 +948,13 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                 /**
                  * 
                  * @param {string} name 
-                 * @param {TwurpleCallback<ChatClient['onMessage']} cbk 
+                 * @param {TwurpleCallback<ChatClient['onMessage']> | TwurpleCallback<ChatClient['onAction']} cbk 
                  * @returns 
                  */
-                (name, cbk) => wrapChat(evs, name, 'onMessage', cbk),
+                (name, cbk) => combineChat(cbk,
+                    c => wrapChat(evs, name, 'onMessage', c),
+                    c => wrapChat(evs, name, 'onAction', c)
+                ),
                 (channel, user, text, msg) => msg.id,
                 (evsData, ircData) => callback({
                     EventSubData: evsData,
@@ -984,7 +991,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                     sourceMessageId: evsData?.sourceMessageId ?? null,
                     sourceBadges: evsData?.sourceBadges ?? null,
                     isSorceOnly: evsData?.isSourceOnly ?? null,
-                    
+
                     isFirst: ircData?.[3].isFirst ?? null, // Doesn't exist in EVS
                     isReturningChatter: ircData?.[3].isReturningChatter ?? null, // Doesn't exist in EVS
                     isHighlight: ircData?.[3].isHighlight ?? null, // Doesn't exist in EVS

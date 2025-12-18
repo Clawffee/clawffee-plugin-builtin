@@ -115,6 +115,8 @@ function wrapEventSubListener(evs, api, uid) {
              * @typedef OnGiftSubAddedData
              * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onMessage']>>[2]?} IRCData Original IRC Data that this data is obtained from
              * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onSub']>>[3]?} IRCUser Original IRC Data about the subscribing user that this data is obtained from
+             * @prop {'1000'|'2000'|'3000'|'Prime'} tier
+             * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onSub']>>[2]['originalGiftInfo']?} originalGiftInfo The info about the original gift of the subscription, when renewing a multi-month gift.
              */
             /**
              * @typedef {OnGiftSubAddedData & import('../node_modules/@twurple/eventsub-base/lib/events/chatNotifications/EventSubChannelChatSubGiftNotificationEvent').EventSubChannelChatSubGiftNotificationEvent} onGiftData
@@ -134,6 +136,8 @@ function wrapEventSubListener(evs, api, uid) {
              * @typedef OnSubAddedData
              * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onMessage']>>[2]?} IRCData Original IRC Data that this data is obtained from
              * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onSub']>>[3]?} IRCUser Original IRC Data about the subscribing user that this data is obtained from
+             * @prop {'1000'|'2000'|'3000'|'Prime'} tier
+             * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onSub']>>[2]['originalGiftInfo']?} originalGiftInfo The info about the original gift of the subscription, when renewing a multi-month gift.
              */
             /**
              * @typedef {OnSubAddedData & import('../node_modules/@twurple/eventsub-base/lib/events/chatNotifications/EventSubChannelChatSubNotificationEvent').EventSubChannelChatSubNotificationEvent} onSubData
@@ -153,6 +157,8 @@ function wrapEventSubListener(evs, api, uid) {
              * @typedef OnResubAddedData
              * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onMessage']>>[2]?} IRCData Original IRC Data that this data is obtained from
              * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onSub']>>[3]?} IRCUser Original IRC Data about the subscribing user that this data is obtained from
+             * @prop {'1000'|'2000'|'3000'|'Prime'} tier
+             * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onSub']>>[2]['originalGiftInfo']?} originalGiftInfo The info about the original gift of the subscription, when renewing a multi-month gift.
              */
             /**
              * 

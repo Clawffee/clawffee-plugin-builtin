@@ -53,6 +53,17 @@ function deepCleanTwitchData(value, seen = new Map()) {
     return seen.get(value);
 }
 
+function overrideToJSON(value) {
+    if(typeof value != 'object' || value == null) {
+        return value
+    }
+    Object.defineProperty(value, Symbol.for('nodejs.util.inspect.custom'), {
+        value: () => deepCleanTwitchData(value),
+        enumerable: false
+    });
+    return value;
+}
+
 module.exports = {
-    deepCleanTwitchData
+    deepCleanTwitchData: overrideToJSON
 }
