@@ -32,7 +32,7 @@ function deepCleanTwitchData(value, seen = new Map()) {
     } 
 
     var o = flatten_inheritance(value);
-    var r = Object.create(null);
+    var r = {};
     for (const key in o) {
         r[key] = deepCleanTwitchData(value[key], seen);
     }
@@ -57,10 +57,12 @@ function overrideToJSON(value) {
     if(typeof value != 'object' || value == null) {
         return value
     }
-    Object.defineProperty(value, Symbol.for('nodejs.util.inspect.custom'), {
-        value: () => deepCleanTwitchData(value),
-        enumerable: false
-    });
+    try {
+        Object.defineProperty(value, Symbol.for('nodejs.util.inspect.custom'), {
+            value: () => deepCleanTwitchData(value),
+            enumerable: false
+        });
+    } catch(e) {}
     return value;
 }
 

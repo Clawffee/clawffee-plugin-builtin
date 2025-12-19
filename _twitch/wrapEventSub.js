@@ -213,7 +213,7 @@ function combineListeners(type, api, channelID, evsCbk, evsIDCbk, IRCCbk, IRCIDC
         resolveName(channelID, api).then((name) => {
             IRCListener = IRCCbk(name, (...args) => {
                 let id = IRCIDCbk(...args);
-                if (!id) return dataCbk(args, null);
+                if (!id) return;
                 addIRCData(id, args);
             });
         });
@@ -221,7 +221,7 @@ function combineListeners(type, api, channelID, evsCbk, evsIDCbk, IRCCbk, IRCIDC
     if (type != 'IRC') {
         EVSListener = evsCbk(channelID, (...args) => {
             let id = evsIDCbk(...args);
-            if (!id) return dataCbk(null, args);
+            if (!id) return;
             addEVSData(id, args);
         })
     }
@@ -409,7 +409,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                 ),
                 (channel, user, subInfo, msg) => (subInfo.isPrime ? '1000' : subInfo.plan) + " - " + subInfo.userId + " - " + subInfo.isGift,
                 (EVSData, IRCargs) => callback({
-                    EVSData: evsData,
+                    EVSData: evsData[0],
                     IRCData: IRCargs?.[2],
                     IRCUser: IRCargs?.[3],
                     broadcasterId: EVSData?.broadcasterId ?? broadcasterID,
@@ -426,8 +426,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
 
 
                 })
-            )
-            return wrapEvent(evs, 'onChannelSubscription', callback, [broadcasterID])
+            );
         },
         /**
          * Subscribes to events that represent a user gifting a subscription to a channel to someone else.
@@ -481,7 +480,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                 (name, cbk) => wrapChat(evs, name, 'onResub', cbk),
                 (channel, user, subInfo) => (subInfo.isPrime ? '1000' : subInfo.plan) + " - " + subInfo.userId,
                 (evsData, IRCargs) => callback({
-                    EVSData: evsData,
+                    EVSData: evsData[0],
                     IRCData: IRCargs?.[2],
                     IRCUser: IRCargs?.[3],
                     broadcasterId: evsData?.broadcasterId ?? IRCargs?.[3].channelId,
@@ -957,7 +956,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                 ),
                 (channel, user, text, msg) => msg.id,
                 (evsData, ircData) => callback({
-                    EventSubData: evsData,
+                    EventSubData: evsData[0],
                     IRCData: ircData?.[3],
                     messageType: evsData?.messageType ?? null, // TODO text, cheermote (emote only but p2w), emote, mention
                     broadcasterID: evsData?.broadcasterId ?? ircData?.[3].channelId,

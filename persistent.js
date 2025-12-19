@@ -1,7 +1,9 @@
+const { getRunningScriptName } = require("../internal/clawffeeInternals");
+
 const fileData = {};
 globalThis.persistent = new Proxy({}, {
     get(target, property, receiver) {
-        const path = globalThis.clawffeeInternals.getRunningScriptName();
+        const path = getRunningScriptName();
         if (moduleByPath[path]) {
             if (!fileData[path]) fileData[path] = {};
             return fileData[path][property];
@@ -9,7 +11,7 @@ globalThis.persistent = new Proxy({}, {
         return null;
     },
     set(target, property, newValue, receiver) {
-        const path = globalThis.clawffeeInternals.getRunningScriptName();
+        const path = getRunningScriptName();
         if (moduleByPath[path]) {
             if (!fileData[path]) fileData[path] = {};
             fileData[path][property] = newValue;
@@ -18,7 +20,7 @@ globalThis.persistent = new Proxy({}, {
         return false;
     },
     deleteProperty(target, property) {
-        const path = globalThis.clawffeeInternals.getRunningScriptName();
+        const path = getRunningScriptName();
         if (moduleByPath[path]) {
             if (!fileData[path]) fileData[path] = {};
             delete fileData[path][property];

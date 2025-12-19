@@ -1,3 +1,5 @@
+const { getRunningScriptName, addFileCleanupFunc, setPrefixStack, getPrefixStack } = require("../internal/clawffeeInternals");
+
 /*   Cache                 
     ┌──@──┐                
     │     │                
@@ -32,33 +34,33 @@ function createDoNothing(path = [], base = null) {
         },
         apply(target, thisarg, args) {
             if(binds.has(base)) {
-                let obj = base;
+                let obj = binds.get(base);
                 let prevObj = null;
-                entry.path.forEach(element => {
+                path.forEach(element => {
                     prevObj = obj;
                     obj = obj?.[element];
                 });
                 try {
-                    const retobj = obj?.apply(prevObj, entry.args);
+                    const retobj = obj?.apply(prevObj, args);
                     if(retobj instanceof Promise) {
-                        retobj.then(entry.resolve).catch(entry.reject);
+                        return retobj
                     } else {
-                        entry.resolve(retobj);
+                        return Promise.resolve(retobj);
                     }
                 } catch(e) {
-                    entry.reject(e);
+                    return Promise.reject(e);
                 }
             }
-            const file = globalThis.clawffeeInternals.getRunningScriptName();
+            const file = getRunningScriptName();
             const icache = cache.get(base);
             if(!icache.has(file)) {
-                clawffeeInternals.fileCleanupFuncs[file]?.push(() => {
+                addFileCleanupFunc(file, () => {
                     cache.get(base).delete(file);
                 });
                 icache.set(file, []);
             }
             return new Promise((resolve, reject) => {
-                icache.get(file).push({path, args, resolve, reject, stack: globalThis.clawffeeInternals.getPrefixStack()});
+                icache.get(file).push({path, args, resolve, reject, stack: getPrefixStack()});
             });
         }
     });
@@ -77,7 +79,7 @@ function bindDoNothing(proxy, base = null) {
     const icache = cache.get(proxy);
     for (const [key, value] of icache) {
         value.forEach(entry => {
-            globalThis.clawffeeInternals.setPrefixStack(entry.stack);
+            setPrefixStack(entry.stack);
             let obj = base;
             let prevObj = null;
             entry.path.forEach(element => {
@@ -94,7 +96,7 @@ function bindDoNothing(proxy, base = null) {
             } catch(e) {
                 entry.reject(e);
             }
-            globalThis.clawffeeInternals.setPrefixStack();
+            setPrefixStack();
         });
     }
     icache.clear();

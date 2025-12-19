@@ -6,8 +6,9 @@ const twitch_data = require('./twitch_data');
 const obs = require('./obs');
 const persistent = require('./persistent');
 const selfClearing = require('./selfClearing');
+const { prefixDefaultFile } = require('../internal/clawffeeInternals');
 
-clawffeeInternals.defaultFile = "const { files, server, twitch, twitch_data, obs, persistent, selfClearing } = require('#helpers');\n" + clawffeeInternals.defaultFile;
+prefixDefaultFile("const { files, server, twitch, twitch_data, obs, persistent, selfClearing } = require('#helpers');\n");
 
 module.exports = {
     files,

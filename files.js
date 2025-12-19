@@ -2,6 +2,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const path = require('path');
 const ini = require('ini');
+const { addFileManager } = require('../internal/clawffeeInternals');
 
 const machineHash = crypto.createHash('md5').update(require("os").hostname()).digest('binary');
 
@@ -185,11 +186,9 @@ function autoSavedJSON(filePath, fallback, options) {
     return proxied;
 }
 
-globalThis.clawffeeInternals.fileManagers['.json'] = {
-    onRequire(fullpath, data) {
-        return autoSavedJSON(fullpath, {}, null);
-    }
-}
+addFileManager('.json', (fullpath, data)  => {
+    return autoSavedJSON(fullpath, {}, null);
+});
 
 /**
  * @type {Map<string, WeakRef<object>>}

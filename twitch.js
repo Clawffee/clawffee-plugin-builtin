@@ -19,6 +19,7 @@ if(!fs.existsSync(path.join(__dirname, 'twitch_data.js'))) {
 const extraData = require("./twitch_data");
 const { createDoNothing, bindDoNothing } = require('./do_nothing');
 const { listen } = require('bun');
+const { appendDefaultFile } = require('../internal/clawffeeInternals');
 
 
 const confPath = 'config/internal/';
@@ -207,8 +208,6 @@ async function connect() {
                             bindDoNothing(connectedUser.events, connectedBots[name].events);
                             bindDoNothing(connectedUser.say, createSayFunction(connectedBots[name], user.id));
                             bindDoNothing(connectedUser.reply, createReplyFunction(connectedBots[name]));
-                            connectedUser.say = connectedBots[name].say;
-                            connectedUser.reply = connectedBots[name].reply;
                             try {
                                 (await connectedUser.api.channelPoints.getCustomRewards(user.id, false)).forEach((val) => {
                                     connectionInfo.redeems[val.id] = {id: val.id, title: val.title, img: val.getImageUrl(2), managed: false};
@@ -243,8 +242,10 @@ async function connect() {
     sharedServerData.internal.twitch = connectionInfo;
     for (const botName in connectedBots) {
         const bot = connectedBots[botName];
-        bot.say = createSayFunction(bot, connectionInfo.main.id);
-        bot.reply = createReplyFunction(bot);
+        if(!bot.say) {
+            bot.say = createSayFunction(bot, connectionInfo.main.id);
+            bot.reply = createReplyFunction(bot);
+        }
     }
     bindDoNothing(connectedBotsDoNothing, connectedBots);
     console.debug("Connected to Twitch API with Twurple.");
@@ -532,6 +533,12 @@ function print() {
     }
 }
 
+appendDefaultFile(`
+twitch.events.chat.onMessage(data => {
+    if(data.messageText !== '!ping') return; // only reply to !ping (if the message is not !ping, we dont do anything)
+    twitch.say('Pong!'); // we say "Pong!" with the main user
+});
+`);
 
 module.exports = {
     connectedBots: connectedBotsDoNothing,
