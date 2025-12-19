@@ -540,6 +540,8 @@ twitch.events.chat.onMessage(data => {
 });
 `);
 
+console.warn('Known bug: after adding a user you may need to restart your clawffee scripts for the user to take effect, will be fixed shortly!')
+
 module.exports = {
     connectedBots: connectedBotsDoNothing,
     ...connectedUser,
