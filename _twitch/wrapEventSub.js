@@ -3,8 +3,6 @@ const { ChatClient } = require("@twurple/chat");
 const { deepCleanTwitchData } = require('./cleanTwurple');
 const { ApiClient } = require("@twurple/api");
 
-// TODO: add IRC PRIVMSG event to onMessage and USERNOTICE to onSub onGiftSub etc. using their ids
-
 /**
  * @typedef {Parameters<T> extends [...infer _, infer L] ? L : never} TwurpleCallback
  * @template {Function} T

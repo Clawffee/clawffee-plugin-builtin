@@ -188,7 +188,7 @@ function autoSavedJSON(filePath, fallback, options) {
 
 addFileManager('.json', (fullpath, data)  => {
     return autoSavedJSON(fullpath, {}, null);
-});
+}, () => {});
 
 /**
  * @type {Map<string, WeakRef<object>>}
