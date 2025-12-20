@@ -128,7 +128,7 @@ function wrapEventSubListener(evs, api, uid) {
              * @param {number | 'EventSub'} type 
              */
             onGift: (callback, broadcasterID = uid, type = 5) => {
-                EventSubFunctions.onChannelChatNotification(data => {
+                return EventSubFunctions.onChannelChatNotification(data => {
                     if(data.type == 'sub_gift') callback(data);
                 }, broadcasterID, type);
             },
@@ -149,7 +149,7 @@ function wrapEventSubListener(evs, api, uid) {
              * @param {number | 'EventSub'} type 
              */
             onSub: (callback, broadcasterID = uid, type = 5) => {
-                EventSubFunctions.onChannelChatNotification(data => {
+                return EventSubFunctions.onChannelChatNotification(data => {
                     if(data.type == 'sub') callback(data);
                 }, broadcasterID, type);
             },
@@ -171,7 +171,7 @@ function wrapEventSubListener(evs, api, uid) {
              * @param {number | 'EventSub'} type 
              */
             onResub: (callback, broadcasterID = uid, type = 5) => {
-                EventSubFunctions.onChannelChatNotification(data => {
+                return EventSubFunctions.onChannelChatNotification(data => {
                     if(data.type == 'resub') callback(data);
                 }, broadcasterID, type);
             },
