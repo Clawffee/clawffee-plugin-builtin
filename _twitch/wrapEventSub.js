@@ -146,7 +146,7 @@ function combineChat(callback, ...args) {
  */
 function resolveName(channelID, api) {
     if (ID2UserCache.has(channelID)) return Promise.resolve(ID2UserCache.get(channelID));
-    return api.users.getUserById(channelID).then((value) => value.name);
+    return api.users.getUserById(channelID).then((value) => {ID2UserCache.set(channelID, value.name); return value.name});
 }
 
 /**
