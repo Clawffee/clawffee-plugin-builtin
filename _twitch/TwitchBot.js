@@ -110,6 +110,7 @@ function wrapEventSubListener(evs, api, uid) {
             raw: {
                 onSub: EventSubFunctions.onChannelSubscription,
                 onResub: EventSubFunctions.onChannelSubscriptionMessage,
+                onGift: EventSubFunctions.onChannelSubscriptionGift
             },
             /**
              * @typedef OnGiftSubAddedData
@@ -117,6 +118,7 @@ function wrapEventSubListener(evs, api, uid) {
              * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onSubGift']>>[3]?} IRCUser Original IRC Data about the subscribing user that this data is obtained from
              * @prop {'1000'|'2000'|'3000'|'Prime'} tier
              * @prop {number?} subscribedMonths The total months the user has been subscribed for (null if IRCData is dropped)
+             * @prop {boolean} payItForward Is this sub a pay it forward event
              * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onSubGift']>>[2]['originalGiftInfo']?} originalGiftInfo The info about the original gift of the subscription, when renewing a multi-month gift. (null if IRCData is dropped)
              */
             /**
@@ -130,7 +132,18 @@ function wrapEventSubListener(evs, api, uid) {
              */
             onGift: (callback, broadcasterID = uid, type = 5) => {
                 return EventSubFunctions.onChannelChatNotification(data => {
-                    if(data.type == 'sub_gift') callback(data);
+                    switch(data.type) {
+                        case 'shared_chat_pay_it_forward':
+                        case 'pay_it_forward':
+                            data.payItForward = true;
+                            callback(data);
+                            break;
+                        case 'shared_chat_sub_gift':
+                        case 'sub_gift':
+                            data.payItForward = false;
+                            callback(data);
+                            break;
+                    }
                 }, broadcasterID, type);
             },
             /**
@@ -152,7 +165,7 @@ function wrapEventSubListener(evs, api, uid) {
              */
             onSub: (callback, broadcasterID = uid, type = 5) => {
                 return EventSubFunctions.onChannelChatNotification(data => {
-                    if(data.type == 'sub') callback(data);
+                    if(data.type == 'sub' || data.type == '') callback(data);
                 }, broadcasterID, type);
             },
             /**

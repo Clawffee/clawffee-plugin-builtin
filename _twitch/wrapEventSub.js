@@ -806,7 +806,9 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
              * @typedef { NotificationChatFunc<'onResub'> | 
              *  NotificationChatFunc<'onSub'> | 
              *  NotificationChatFunc<'onSub'> | 
-             *  NotificationChatFunc<'onSubGift'>
+             *  NotificationChatFunc<'onSubGift'> | 
+             *  NotificationChatFunc<'onStandardPayForward'> |
+             *  NotificationChatFunc<'onCommunityPayForward'>
              * } tmp
              */
             /**
@@ -814,18 +816,15 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
              */
             function getEVSID(data) {
                 switch (data.type) {
-                    case "announcement": return null;
-                    case 'bits_badge_tier': return null;
-                    case 'charity_donation': return null;
-                    case 'community_sub_gift': return null;
-                    case 'gift_paid_upgrade': return null;
-                    case 'pay_it_forward': return null;
-                    case 'prime_paid_upgrade': return null;
-                    case 'raid': return null;
+                    case 'shared_chat_pay_it_forward':
+                    case 'pay_it_forward':
+                    case 'shared_chat_resub':
                     case 'resub':
+                    case 'shared_chat_sub':
                     case 'sub':
+                    case 'shared_chat_sub_gift':
                     case 'sub_gift': return data.messageId;
-                    case 'unraid': return null;
+                    default: return null;
                 }
             }
             /**
@@ -834,6 +833,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
              */
             function getChatID(data) {
                 switch (data.type) {
+                    case 'onStandardPayForward': return "sub_gift - " + data.args[3].id;
                     case 'onResub': return "resub - " + data.args[3].id;
                     case 'onSub': return "sub - " + data.args[3].id;
                     case 'onSubGift': return "sub_gift - " + data.args[3].id;
@@ -848,7 +848,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                 (data) => {
                     const d = getEVSID(data);
                     if (!d) return null;
-                    return data.type + " - " + d;
+                    return (data.type.startsWith('shared_chat_')?data.type.substring(12):data.type) + " - " + d;
                 },
                 /**
                  * 
