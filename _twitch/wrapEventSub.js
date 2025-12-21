@@ -876,7 +876,8 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                             if(ircData) {
                                 evsdata.ircData = ircData[0].args[2];
                                 evsdata.ircUser = ircData[0].args[3];
-                                evsdata.tier = evsdata.ircData[0].args[2].plan;
+                                evsdata.tier = ircData[0].args[2].plan;
+                                evsdata.subscribedMonths = ircData[0].args[2].months;
                                 evsdata.originalGiftInfo = ircData[0].args[2].originalGiftInfo;
                             }
                             return callback(evsdata);
