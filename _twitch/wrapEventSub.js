@@ -95,6 +95,7 @@ function wrapEvent(evs, name, callback, args = []) {
 function wrapChat(evs, userName, name, callback) {
     const chat = chatListeners.get(evs);
     if (!chat.currentChannels.includes(userName)) {
+        chat.currentChannels.push(userName);
         chat.join(userName);
     }
     if (!eventManagers.has(chat)) eventManagers.set(chat, {});
