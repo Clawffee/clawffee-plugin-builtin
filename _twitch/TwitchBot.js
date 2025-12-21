@@ -116,8 +116,8 @@ function wrapEventSubListener(evs, api, uid) {
              * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onSubGift']>>[2]?} IRCData Original IRC Data that this data is obtained from
              * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onSubGift']>>[3]?} IRCUser Original IRC Data about the subscribing user that this data is obtained from
              * @prop {'1000'|'2000'|'3000'|'Prime'} tier
-             * @prop {number} subscribedMonths The total months the user has been subscribed for
-             * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onSubGift']>>[2]['originalGiftInfo']?} originalGiftInfo The info about the original gift of the subscription, when renewing a multi-month gift.
+             * @prop {number?} subscribedMonths The total months the user has been subscribed for (null if IRCData is dropped)
+             * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onSubGift']>>[2]['originalGiftInfo']?} originalGiftInfo The info about the original gift of the subscription, when renewing a multi-month gift. (null if IRCData is dropped)
              */
             /**
              * @typedef {OnGiftSubAddedData & import('../node_modules/@twurple/eventsub-base/lib/events/chatNotifications/EventSubChannelChatSubGiftNotificationEvent').EventSubChannelChatSubGiftNotificationEvent} onGiftData
@@ -138,8 +138,8 @@ function wrapEventSubListener(evs, api, uid) {
              * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onSub']>>[2]?} IRCData Original IRC Data that this data is obtained from
              * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onSub']>>[3]?} IRCUser Original IRC Data about the subscribing user that this data is obtained from
              * @prop {'1000'|'2000'|'3000'|'Prime'} tier
-             * @prop {number} subscribedMonths The total months the user has been subscribed for
-             * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onSub']>>[2]['originalGiftInfo']?} originalGiftInfo The info about the original gift of the subscription, when renewing a multi-month gift.
+             * @prop {number?} subscribedMonths The total months the user has been subscribed for (null if IRCData is dropped)
+             * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onSub']>>[2]['originalGiftInfo']?} originalGiftInfo The info about the original gift of the subscription, when renewing a multi-month gift. (null if IRCData is dropped)
              */
             /**
              * @typedef {OnSubAddedData & import('../node_modules/@twurple/eventsub-base/lib/events/chatNotifications/EventSubChannelChatSubNotificationEvent').EventSubChannelChatSubNotificationEvent} onSubData
@@ -160,8 +160,8 @@ function wrapEventSubListener(evs, api, uid) {
              * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onResub']>>[2]?} IRCData Original IRC Data that this data is obtained from
              * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onResub']>>[3]?} IRCUser Original IRC Data about the subscribing user that this data is obtained from
              * @prop {'1000'|'2000'|'3000'|'Prime'} tier
-             * @prop {number} subscribedMonths The total months the user has been subscribed for
-             * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onResub']>>[2]['originalGiftInfo']?} originalGiftInfo The info about the original gift of the subscription, when renewing a multi-month gift.
+             * @prop {number?} subscribedMonths The total months the user has been subscribed for (null if IRCData is dropped)
+             * @prop {Parameters<import('./wrapEventSub').TwurpleCallback<ChatClient['onResub']>>[2]['originalGiftInfo']?} originalGiftInfo The info about the original gift of the subscription, when renewing a multi-month gift. (null if IRCData is dropped)
              */
             /**
              * 
