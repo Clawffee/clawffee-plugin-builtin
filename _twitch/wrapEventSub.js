@@ -971,7 +971,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                 ),
                 (channel, user, text, msg) => msg.id,
                 (evsData, ircData) => callback({
-                    EventSubData: evsData[0],
+                    EventSubData: evsData?.[0],
                     IRCData: ircData?.[3],
                     messageType: evsData?.messageType ?? null, // TODO text, cheermote (emote only but p2w), emote, mention
                     broadcasterID: evsData?.broadcasterId ?? ircData?.[3].channelId,
