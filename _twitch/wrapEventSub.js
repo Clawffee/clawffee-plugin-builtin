@@ -187,6 +187,12 @@ function combineListeners(type, api, channelID, evsCbk, evsIDCbk, IRCCbk, IRCIDC
         dataCbk(EVSCache.get(id), IRCCache.get(id));
     }
     function resolve(id) {
+        if(id == "pass") {
+            flush(id);
+            IRCCache.delete(id);
+            EVSCache.delete(id);
+            Resolved.delete(id);
+        }
         if (Resolved.get(id) === true) return;
         Cache.push(id);
         if (
@@ -833,10 +839,11 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
              */
             function getChatID(data) {
                 switch (data.type) {
-                    case 'onStandardPayForward': return "sub_gift - " + data.args[3].id;
                     case 'onResub': return "resub - " + data.args[3].id;
                     case 'onSub': return "sub - " + data.args[3].id;
                     case 'onSubGift': return "sub_gift - " + data.args[3].id;
+                    case 'onStandardPayForward': return "sub_gift - " + data.args[3].id;
+                    case 'onCommunityPayForward': return "sub_gift - " + data.args[3].id;
                 }
             }
             return combineListeners(type, api, broadcasterID,
@@ -847,7 +854,8 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                 (id, cbk) => wrapEvent(evs, 'onChannelChatNotification', cbk, [id, uid]),
                 (data) => {
                     const d = getEVSID(data);
-                    if (!d) return null;
+                    console.log("got notification evs data", d, data);
+                    if (!d) return "pass";
                     return (data.type.startsWith('shared_chat_')?data.type.substring(12):data.type) + " - " + d;
                 },
                 /**
@@ -863,7 +871,9 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                     (c) => wrapChat(evs, name, 'onSubGift', (...args) => c({ type: 'onSubGift', args }))
                 ),
                 (data) => {
-                    return getChatID(data);
+                    const d = getChatID(data)
+                    console.log("got notification irc data", d, data);
+                    return d;
                 },
                 (evsdata, ircData) => {
                     switch (evsdata.type) {
@@ -889,9 +899,9 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                             return callback(evsdata);
                     }
                 }
-            )
-            return wrapEvent(evs, 'onChannelChatNotification', callback, [broadcasterID, uid])
+            );
         },
+        
         /**
          * @typedef onChannelMessageParam
          * @prop {Parameters<TwurpleCallback<EventSubWsListener['onChannelChatMessage']>>[0]?} EventSubData Original EventSub Data that this data is obtained from
