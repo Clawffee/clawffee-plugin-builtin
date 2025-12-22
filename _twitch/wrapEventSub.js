@@ -168,7 +168,7 @@ function resolveName(channelID, api) {
  * @param {(...params: Parameters<EVSCallback>) => number} evsIDCbk 
  * @param {(name: string, callback: IRCCallback) => ChatClient} IRCCbk 
  * @param {(...params: Parameters<IRCCallback>) => number} IRCIDCbk 
- * @param {(EVSargs: Parameters<EVSCallback>[0], IRCargs: Parameters<IRCCallback>) => any} dataCbk
+ * @param {(EVSargs: Parameters<EVSCallback>, IRCargs: Parameters<IRCCallback>) => any} dataCbk
  * @template IRCCallback
  * @template EVSCallback
  * @returns {EventListener}
@@ -880,7 +880,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                 (evsdata, ircData) => {
                     console.log("resulted in this object call", evsdata, ircData);
                     if(!evsdata) {console.warn('potentially dropped a notification?'); return;}
-                    switch (evsdata.type) {
+                    switch (evsdata[0].type) {
                         case "announcement":
                         case 'bits_badge_tier':
                         case 'charity_donation':
@@ -889,18 +889,18 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                         case 'pay_it_forward':
                         case 'prime_paid_upgrade':
                         case 'unraid':
-                        case 'raid': return callback(evsdata);
+                        case 'raid': return callback(evsdata[0]);
                         case 'resub':
                         case 'sub':
                         case 'sub_gift':
                             if(ircData) {
-                                evsdata.ircData = ircData[0].args[2];
-                                evsdata.ircUser = ircData[0].args[3];
-                                evsdata.tier = ircData[0].args[2].plan;
-                                evsdata.subscribedMonths = ircData[0].args[2].months;
-                                evsdata.originalGiftInfo = ircData[0].args[2].originalGiftInfo;
+                                evsdata[0].ircData = ircData[0].args[2];
+                                evsdata[0].ircUser = ircData[0].args[3];
+                                evsdata[0].tier = ircData[0].args[2].plan;
+                                evsdata[0].subscribedMonths = ircData[0].args[2].months;
+                                evsdata[0].originalGiftInfo = ircData[0].args[2].originalGiftInfo;
                             }
-                            return callback(evsdata);
+                            return callback(evsdata[0]);
                     }
                 }
             );
