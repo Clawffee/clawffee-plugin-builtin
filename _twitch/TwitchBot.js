@@ -132,6 +132,7 @@ function wrapEventSubListener(evs, api, uid) {
              */
             onGift: (callback, broadcasterID = uid, type = 5) => {
                 return EventSubFunctions.onChannelChatNotification(data => {
+                    console.log('notification', data)
                     switch(data.type) {
                         case 'shared_chat_pay_it_forward':
                         case 'pay_it_forward':

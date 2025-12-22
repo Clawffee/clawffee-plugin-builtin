@@ -192,6 +192,7 @@ function combineListeners(type, api, channelID, evsCbk, evsIDCbk, IRCCbk, IRCIDC
             IRCCache.delete(id);
             EVSCache.delete(id);
             Resolved.delete(id);
+            return;
         }
         if (Resolved.get(id) === true) return;
         Cache.push(id);
@@ -844,6 +845,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                     case 'onSubGift': return "sub_gift - " + data.args[3].id;
                     case 'onStandardPayForward': return "sub_gift - " + data.args[3].id;
                     case 'onCommunityPayForward': return "sub_gift - " + data.args[3].id;
+                    default: return null;
                 }
             }
             return combineListeners(type, api, broadcasterID,
@@ -876,6 +878,8 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                     return d;
                 },
                 (evsdata, ircData) => {
+                    console.log("resulted in this object call", evsdata, ircData);
+                    if(!evsdata) {console.warn('potentially dropped a notification?'); return;}
                     switch (evsdata.type) {
                         case "announcement":
                         case 'bits_badge_tier':
