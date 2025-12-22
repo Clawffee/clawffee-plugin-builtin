@@ -856,7 +856,6 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                 (id, cbk) => wrapEvent(evs, 'onChannelChatNotification', cbk, [id, uid]),
                 (data) => {
                     const d = getEVSID(data);
-                    console.log("got notification evs data", d, data);
                     if (!d) return "pass";
                     return (data.type.startsWith('shared_chat_')?data.type.substring(12):data.type) + " - " + d;
                 },
@@ -874,11 +873,9 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                 ),
                 (data) => {
                     const d = getChatID(data)
-                    console.log("got notification irc data", d, data);
                     return d;
                 },
                 (evsdata, ircData) => {
-                    console.log("resulted in this object call", evsdata, ircData);
                     if(!evsdata) {console.warn('potentially dropped a notification?'); return;}
                     switch (evsdata[0].type) {
                         case "announcement":
@@ -895,6 +892,9 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                         case 'sub_gift':
                             if(ircData) {
                                 evsdata[0].ircData = ircData[0].args[2];
+                                evsdata[0].gifterName = evsdata[0].gifterName ?? "ananonymoususer";
+                                evsdata[0].gifterDisplayName = evsdata[0].gifterDisplayName ?? "AnAnonymousUser";
+                                evsdata[0].gifterId = evsdata[0].gifterId ?? 279923841;
                                 evsdata[0].ircUser = ircData[0].args[3];
                                 evsdata[0].tier = ircData[0].args[2].plan;
                                 evsdata[0].subscribedMonths = ircData[0].args[2].months;
