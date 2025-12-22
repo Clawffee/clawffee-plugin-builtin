@@ -198,8 +198,8 @@ function combineListeners(type, api, channelID, evsCbk, evsIDCbk, IRCCbk, IRCIDC
             Resolved.set(id, setTimeout(() => flush(id), type * 1000));
         }
         if (Cache.length > 64) {
-            flush(id);
             const id = Cache.shift();
+            flush(id);
             IRCCache.delete(id);
             EVSCache.delete(id);
             Resolved.delete(id);
