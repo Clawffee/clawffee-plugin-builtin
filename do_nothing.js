@@ -55,7 +55,7 @@ function createDoNothing(path = [], base = null) {
             const icache = cache.get(base);
             if(!icache.has(file)) {
                 addFileCleanupFunc(file, () => {
-                    cache.get(base).delete(file);
+                    icache.delete(file);
                 });
                 icache.set(file, []);
             }
