@@ -444,7 +444,12 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
          * @param {TwurpleCallback<EventSubWsListener['onChannelSubscriptionGift']>} callback
          * @param {string?} broadcasterID broadcaster to listen to (defaults to self)
          */
-        onChannelSubscriptionGift(callback, broadcasterID = uid,) { return wrapEvent(evs, 'onChannelSubscriptionGift', callback, [broadcasterID]) },
+        onChannelSubscriptionGift(callback, broadcasterID = uid,) { return wrapEvent(evs, 'onChannelSubscriptionGift', (data) => {
+            data.gifterName = data.gifterName ?? "ananonymoususer";
+            data.gifterDisplayName = data.gifterDisplayName ?? "AnAnonymousUser";
+            data.gifterId = data.gifterId ?? 279923841;
+            callback(data);
+        }, [broadcasterID]) },
         /**
          * @typedef onChannelSubscriptionType
          * @prop {Parameters<TwurpleCallback<EventSubWsListener['onChannelChatMessage']>>[0]?} EventSubData Original EventSub Data that this data is obtained from
@@ -890,11 +895,14 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                         case 'resub':
                         case 'sub':
                         case 'sub_gift':
+                            evsdata[0].gifterName = evsdata[0].gifterName ?? "ananonymoususer";
+                            evsdata[0].gifterDisplayName = evsdata[0].gifterDisplayName ?? "AnAnonymousUser";
+                            evsdata[0].gifterId = evsdata[0].gifterId ?? 279923841;
+                            evsdata[0].chatterName = evsdata[0].chatterName ?? "ananonymoususer";
+                            evsdata[0].chatterDisplayName = evsdata[0].chatterDisplayName ?? "AnAnonymousUser";
+                            evsdata[0].chatterId = evsdata[0].chatterId ?? 279923841;
                             if(ircData) {
                                 evsdata[0].ircData = ircData[0].args[2];
-                                evsdata[0].gifterName = evsdata[0].gifterName ?? "ananonymoususer";
-                                evsdata[0].gifterDisplayName = evsdata[0].gifterDisplayName ?? "AnAnonymousUser";
-                                evsdata[0].gifterId = evsdata[0].gifterId ?? 279923841;
                                 evsdata[0].ircUser = ircData[0].args[3];
                                 evsdata[0].tier = ircData[0].args[2].plan;
                                 evsdata[0].subscribedMonths = ircData[0].args[2].months;
