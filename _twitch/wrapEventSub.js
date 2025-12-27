@@ -420,7 +420,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                 ),
                 (channel, user, subInfo, msg) => (subInfo.isPrime ? '1000' : subInfo.plan) + " - " + subInfo.userId + " - " + subInfo.isGift,
                 (EVSData, IRCargs) => callback({
-                    EVSData: evsData[0],
+                    EVSData: evsData?.[0],
                     IRCData: IRCargs?.[2],
                     IRCUser: IRCargs?.[3],
                     broadcasterId: EVSData?.broadcasterId ?? broadcasterID,
@@ -448,7 +448,7 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
             data.gifterName = data.gifterName ?? "ananonymoususer";
             data.gifterDisplayName = data.gifterDisplayName ?? "AnAnonymousUser";
             data.gifterId = data.gifterId ?? 279923841;
-            callback(data);
+            return callback(data);
         }, [broadcasterID]) },
         /**
          * @typedef onChannelSubscriptionType
@@ -892,22 +892,29 @@ module.exports = function wrapEventSubListener(evs, api, uid) {
                         case 'prime_paid_upgrade':
                         case 'unraid':
                         case 'raid': return callback(evsdata[0]);
+                        case 'sub_gift':
                         case 'resub':
                         case 'sub':
-                        case 'sub_gift':
-                            evsdata[0].gifterName = evsdata[0].gifterName ?? "ananonymoususer";
-                            evsdata[0].gifterDisplayName = evsdata[0].gifterDisplayName ?? "AnAnonymousUser";
-                            evsdata[0].gifterId = evsdata[0].gifterId ?? 279923841;
-                            evsdata[0].chatterName = evsdata[0].chatterName ?? "ananonymoususer";
-                            evsdata[0].chatterDisplayName = evsdata[0].chatterDisplayName ?? "AnAnonymousUser";
-                            evsdata[0].chatterId = evsdata[0].chatterId ?? 279923841;
                             if(ircData) {
                                 evsdata[0].ircData = ircData[0].args[2];
                                 evsdata[0].ircUser = ircData[0].args[3];
-                                evsdata[0].tier = ircData[0].args[2].plan;
                                 evsdata[0].subscribedMonths = ircData[0].args[2].months;
                                 evsdata[0].originalGiftInfo = ircData[0].args[2].originalGiftInfo;
                             }
+                            evsdata[0] = new Proxy(evsdata[0], {
+                                get(target, p, receiver) {
+                                    let res = Reflect.get(target, p, receiver);
+                                    if(evsdata[0].type == 'sub_gift') {
+                                        if(['chatterId','gifterId'].includes(p)) res = res ?? 279923841;
+                                        if(['chatterName','gifterName'].includes(p)) res = res ?? "ananonymoususer";
+                                        if(['chatterDisplayName','gifterDisplayName'].includes(p)) res = res ?? "AnAnonymousUser";
+                                    }
+                                    if(ircData) {
+                                        if(p === 'tier') return ircData[0].args[2].plan;
+                                    }
+                                    return res;
+                                }
+                            });
                             return callback(evsdata[0]);
                     }
                 }
