@@ -7,8 +7,9 @@ const obs = require('./obs');
 const persistent = require('./persistent');
 const selfClearing = require('./selfClearing');
 const { prefixDefaultFile } = require('../internal/clawffeeInternals');
+const path = require('path');
 
-prefixDefaultFile("const { files, server, twitch, twitch_data, obs, persistent, selfClearing } = require('#helpers');\n");
+prefixDefaultFile((fullpath) => `const { files, server, twitch, twitch_data, obs, persistent, selfClearing } = require('${path.posix.relative(path.dirname(fullpath), __filename)}');\n`);
 
 module.exports = {
     files,
