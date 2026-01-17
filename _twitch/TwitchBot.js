@@ -108,8 +108,24 @@ function wrapEventSubListener(evs, api, uid) {
         },
         subs: {
             raw: {
+                /**
+                 * Subscribes to events that represent a user subscribing to a channel.
+                 * @param callback
+                 * @param broadcasterID — broadcaster to listen to (defaults to self)
+                 */
                 onSub: EventSubFunctions.onChannelSubscription,
+                /**
+                 * Subscribes to events that represent a user's subscription to a channel being announced.
+                 * @param callback
+                 * @param broadcasterID — broadcaster to listen to (defaults to self)
+                 * @param type — type of listener to subscribe as, defaults to a combination of IRC and EventSub messages (number for timeout period)
+                 */
                 onResub: EventSubFunctions.onChannelSubscriptionMessage,
+                /**
+                 * Subscribes to events that represent a user gifting a subscription to a channel to someone else.
+                 * @param callback
+                 * @param broadcasterID — broadcaster to listen to (defaults to self)
+                 */
                 onGift: EventSubFunctions.onChannelSubscriptionGift
             },
             /**
@@ -192,7 +208,11 @@ function wrapEventSubListener(evs, api, uid) {
                     if(data.type == 'resub') callback(data);
                 }, broadcasterID, type);
             },
+            /**
+             * @deprecated use onGiftEvent instead, its the same function just better named
+             */
             onCommunityGift: EventSubFunctions.onChannelSubscriptionGift,
+            onGiftEvent: EventSubFunctions.onChannelSubscriptionGift,
             onEnd: EventSubFunctions.onChannelSubscriptionEnd,
         },
         charity: {
