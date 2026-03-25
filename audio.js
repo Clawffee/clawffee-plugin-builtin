@@ -17,7 +17,7 @@ function getFunc() {
         // On Windows we can offload the work to PowerShell:
         case 'win32': return (filePath, volume=100) => {
             // protection against command injection
-            const escapedPath = filePath.replace(/'/g, "''");
+            const escapedPath = filePath.replaceAll("'", "''");
             if(volume != 100) console.warn('volume is not implemented for windows, a more future proof solution will come.');
             spawn(`powershell`, [
                 `-c`,
@@ -32,7 +32,7 @@ function getFunc() {
             // And on everything else, i.e. linux/unix, we can use aplay, which comes
             // preinstalled but doesn't play mp3 files, or we can use ffplay (the audio
             // player that comes with ffmpeg), which does, but requires an install.
-            if(spawnSync('which', ['ffplay'], { stdio: 'ignore' }).status != 0)
+            if(spawnSync('which', ['ffplay'], { stdio: 'ignore' }).status == 0)
                 return (filePath, volume=100) => spawn(`ffplay`, 
                     ['-autoexit', '-nodisp', '-vn', '-volume', String(volume), '-i', filePath]
                 );
