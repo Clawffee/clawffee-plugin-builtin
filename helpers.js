@@ -14,7 +14,7 @@ const { prefixDefaultFile } = require('../internal/clawffeeInternals.js');
 const path = require('path');
 const internal = require('../internal/clawffeeInternals.js');
 
-prefixDefaultFile((fullpath) => `const { files, server, twurple, twitch_data, obs, persistent, selfClearing } = require('${path.relative(path.dirname(fullpath), __filename).replaceAll('\\', '/')}');\n`);
+prefixDefaultFile((fullpath) => `const { files, server, twurple, twitch_data, obs, persistent, selfClearing, extras } = require('${path.relative(path.dirname(fullpath), __filename).replaceAll('\\', '/')}');\n`);
 
 const warnfiles = new Set();
 module.exports = {
@@ -34,5 +34,8 @@ module.exports = {
     obs,
     twitch_data,
     persistent,
-    selfClearing
+    selfClearing,
+    extras: {
+        ...require('./audio.js')
+    }
 }
