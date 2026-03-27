@@ -6,9 +6,9 @@ const originals = {
 const {spawnSync, spawn} = require('child_process')
 
 function setMac() {
-    globalThis.prompt = () => console.error('Prompt, alert and confirm are not yet implemented for Windows') || "";
-    globalThis.alert = () => console.error('Prompt, alert and confirm are not yet implemented for Windows') || "";
-    globalThis.confirm = () => console.error('Prompt, alert and confirm are not yet implemented for Windows') || "";
+    globalThis.prompt = () => console.error('Prompt, alert and confirm are not yet implemented for MacOS') || "";
+    globalThis.alert = () => console.error('Prompt, alert and confirm are not yet implemented for MacOS') || "";
+    globalThis.confirm = () => console.error('Prompt, alert and confirm are not yet implemented for MacOS') || "";
 }
 
 function setWindows() {
