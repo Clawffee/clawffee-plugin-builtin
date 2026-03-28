@@ -3,7 +3,7 @@
 const { spawn, spawnSync } = require('child_process');
 /**
  * 
- * @returns {[(text: string) => void, () => string | null]}
+ * @returns {[(text: string) => void, () => string]}
  */
 function getFunc() {
     switch(process.platform) {
@@ -45,12 +45,12 @@ const funcs = getFunc();
 module.exports = {
     /**
      * Write the given text into the clipboard
-     * @param {string} text
+     * @param {string} text the text that should be inserted into the clipboard
      */
     setClipboardText: funcs[0],
     /**
      * Read the given text from the clipboard (can return an empty string if the clipboard couldn't be read)
-     * @returns {string}
+     * @returns {string} the clipboard text
      */
     getClipboardText: funcs[1],
     onClipboardChange: () => {
