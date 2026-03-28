@@ -13,6 +13,7 @@ const selfClearing = require('./selfClearing.js');
 const { prefixDefaultFile } = require('../internal/clawffeeInternals.js');
 const path = require('path');
 const internal = require('../internal/clawffeeInternals.js');
+const clipboard = require('./clipboard.js');
 
 prefixDefaultFile((fullpath) => `const { files, server, twurple, twitch_data, obs, persistent, selfClearing, extras } = require('${path.relative(path.dirname(fullpath), __filename).replaceAll('\\', '/')}');\n`);
 
@@ -36,6 +37,7 @@ module.exports = {
     persistent,
     selfClearing,
     extras: {
-        ...require('./audio.js')
+        ...require('./audio.js'),
+        clipboard
     }
 }
