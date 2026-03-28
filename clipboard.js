@@ -19,9 +19,9 @@ function getFunc() {
         // On Windows we can offload the work to PowerShell:
         case 'win32': return [
             (text) => {
-                spawn('powershell', ['Set-ClipBoard', '-Value', `'${String(text ?? "").replaceAll("'","''")}'`]).stdout.toString()
+                spawn('powershell', ['Set-Clipboard', '-Value', `'${String(text ?? "").replaceAll("'","''")}'`]).stdout.toString()
             },
-            () => spawnSync('powershell', ['Get-ClipBoard']).stdout.toString()
+            () => spawnSync('powershell', ['Get-Clipboard']).stdout.toString()
         ];
         default: 
             if(spawnSync('which', ['wl-copy']).status == 0) {
