@@ -42,14 +42,16 @@ function getFunc() {
 }
 const funcs = getFunc();
 
-// And then we can just export that for use anywhere in our codebase.
 module.exports = {
     /**
-     * Play the provided audio at the given Path
-     * @param {string} filePath file path of the file to play
-     * @param {number} volume volume at which to play the file
+     * Write the given text into the clipboard
+     * @param {string} text
      */
     setClipboardText: funcs[0],
+    /**
+     * Read the given text from the clipboard (can return an empty string if the clipboard couldn't be read)
+     * @returns {string}
+     */
     getClipboardText: funcs[1],
     onClipboardChange: () => {
         console.warn('not yet implemented');
