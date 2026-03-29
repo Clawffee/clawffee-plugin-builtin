@@ -1,4 +1,4 @@
-const { getRunningScriptName } = require("../internal/clawffeeInternals");
+const { getRunningScriptName } = require("../../internal/clawffeeInternals");
 
 const fileData = {};
 globalThis.persistent = new Proxy({}, {

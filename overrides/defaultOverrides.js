@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const { codeBinder: { associateFunctionWithFile }} = require('../internal/internal');
+const { codeBinder: { associateFunctionWithFile }} = require('../../internal/internal');
 
 /* ------------------------------- FILE SAFETY ------------------------------ */
 

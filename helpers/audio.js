@@ -46,7 +46,6 @@ function getFunc() {
  * Play the provided audio at the given Path
  * @param {string} filePath file path of the file to play
  * @param {number} volume volume at which to play the file
- * @returns 
  */
 const playAudio = getFunc();
 

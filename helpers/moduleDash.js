@@ -5,7 +5,7 @@ const pathModule = require('path');
 const crypto = require('crypto');
 
 const { setFunction } = require("./server");
-const { clawCallbacks: { moduleByPath, moduleLoad, moduleUnload } } = require("../internal/internal");
+const { clawCallbacks: { moduleByPath, moduleLoad, moduleUnload } } = require("../../internal/internal");
 
 let loadTimeout = null;
 setFunction('/internal/moduleUnload', (req, url) => {

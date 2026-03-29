@@ -14,7 +14,7 @@ function openURL(url) {
     }
 }
 
-const { server: { setFunction, sharedServerData } } = require('../internal/internal');
+const { server: { setFunction, sharedServerData } } = require('../../internal/internal');
 
 module.exports = {
     setFunction,
