@@ -1,5 +1,5 @@
-const files = require('./helpers/files.js');
-const server = require('./helpers/server.js');
+const files = require('./files.js');
+const server = require('./server.js');
 const subscribable = require('./subscribable.js');
 const twitch = require('../twurple/twitch.js');
 const fs = require('fs');
@@ -7,13 +7,13 @@ if(!fs.existsSync('config/internal/twitch_data.js')) {
     fs.writeFileSync('config/internal/twitch_data.js', 'module.exports = {"IDs":{},"redeems":{}}');
 }
 const twitch_data = require('../../config/internal/twitch_data.js');
-const obs = require('./helpers/obs.js');
-const persistent = require('./helpers/persistent.js');
-const selfClearing = require('./helpers/selfClearing.js');
+const obs = require('./obs.js');
+const persistent = require('./persistent.js');
+const selfClearing = require('./selfClearing.js');
 const { prefixDefaultFile } = require('../internal/clawffeeInternals.js');
 const path = require('path');
 const internal = require('../internal/clawffeeInternals.js');
-const clipboard = require('./helpers/clipboard.js');
+const clipboard = require('./clipboard.js');
 
 prefixDefaultFile((fullpath) => `const { files, server, twurple, twitch_data, obs, persistent, selfClearing, extras } = require('${path.relative(path.dirname(fullpath), __filename).replaceAll('\\', '/')}');\n`);
 
@@ -37,7 +37,7 @@ module.exports = {
     persistent,
     selfClearing,
     extras: {
-        ...require('./helpers/audio.js'),
+        ...require('./audio.js'),
         clipboard
     }
 }

@@ -1,6 +1,6 @@
 const { autoSavedJSON } = require('./files');
 
-const { codeBinder: { associateFunctionWithFile } } = require("../../internal/internal");
+const { codeBinder: { associateFunctionWithFile } } = require("../internal/internal");
 
 const confPath = 'config/internal/';
 const conf = autoSavedJSON(confPath + 'obs.json', {
