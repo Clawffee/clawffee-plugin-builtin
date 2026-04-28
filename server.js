@@ -1,4 +1,4 @@
-const { server: { setFunction, sharedServerData, openURl }} = require('../internal/internal');
+const { server: { setFunction, sharedServerData, openURL }} = require('../internal/internal');
 
 module.exports = {
     setFunction,
