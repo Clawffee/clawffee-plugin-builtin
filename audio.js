@@ -1,53 +1,32 @@
 //@ts-check
-// lightly adjusted from https://stackoverflow.com/a/79286769
-// will get a better implementation one day
 
-// You can either use spawn or exec, the choice is often purely aesthetic,
-// but spawn() doesn't spawn a shell, which is what we want here.
-const { spawn, spawnSync } = require('child_process');
+const { addPluginScript } = require("../internal/clawffeeInternals");
+const { sharedServerData } = require('../internal/internal').server;
+const fs = require('fs');
 
-/**
- * 
- * @returns {(filePath: string, volume: number) => void}
- */
-function getFunc() {
-    switch(process.platform) {
-        // On MacOS, we have afplay available:
-        case 'darwin': return (filePath, volume=100) => spawn(`afplay`, [filePath]); 
-        // On Windows we can offload the work to PowerShell:
-        case 'win32': return (filePath, volume=100) => {
-            // protection against command injection
-            const escapedPath = filePath.replaceAll("'", "''");
-            if(volume != 100) console.warn('volume is not implemented for windows, a more future proof solution will come.');
-            spawn(`powershell`, [
-                `-c`,
-                `(`,
-                `New-Object`,
-                `Media.SoundPlayer`,
-                `'${escapedPath}'`,
-                `).PlaySync();`
-            ]);
-        }
-        default: 
-            // And on everything else, i.e. linux/unix, we can use aplay, which comes
-            // preinstalled but doesn't play mp3 files, or we can use ffplay (the audio
-            // player that comes with ffmpeg), which does, but requires an install.
-            if(spawnSync('which', ['ffplay'], { stdio: 'ignore' }).status == 0)
-                return (filePath, volume=100) => spawn(`ffplay`, 
-                    ['-autoexit', '-nodisp', '-vn', '-volume', String(volume), '-i', filePath]
-                );
-            return (filePath, volume=100) => {
-                if(volume != 100) console.warn('volume is not implemented for aplay, a more future proof solution will come.');
-                return spawn(`aplay`, [filePath]);
-            }
-    }
-}
 /**
  * Play the provided audio at the given Path
  * @param {string} filePath file path of the file to play
- * @param {number} volume volume at which to play the file
+ * @param {number} volume volume at which to play the file in %
+ * @param {number} speed speed/pitch at which to play the file in %
+ * @returns 
  */
-const playAudio = getFunc();
+function playAudio(filePath, volume=100, speed=100) {
+    const {promise, resolve, reject} = Promise.withResolvers();
+    fs.readFile(filePath, (err, data) => {
+        if(err) return reject(err);
+        if(!data) return;
+        sharedServerData.internal.playAudio = {
+            url: `data:audio/${filePath.split('.').pop()};base64,${data.toBase64()}`,
+            vol: volume,
+            spd: speed
+        }
+        resolve();
+    });
+    return promise;
+}
+
+addPluginScript('audio', 'plugins/builtin/_UI/audioHandler.js');
 
 // And then we can just export that for use anywhere in our codebase.
 module.exports = {
