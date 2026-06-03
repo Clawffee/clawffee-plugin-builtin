@@ -19,7 +19,7 @@ module.exports = {
         if(!warnfiles.has(s))
             console.warn('Please do not use helpers.twitch in this version as it will change in future versions, use helpers.twurple instead!');
         warnfiles.add(s);
-        return require('../twurple/twitch.js');
+        return require('../katzentatzentanz/twurple/twitch.js');
     },
     get obs() {return require('./obs.js')},
     get twitch_data() {return require('../../config/internal/twitch_data.js')},
